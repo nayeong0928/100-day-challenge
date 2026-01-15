@@ -151,3 +151,102 @@
     }
 
 ```
+
+## 삭제
+
+### deleteItem
+
+- 삭제할 원소를 찾는 메소드, 삭제할 원소를 찾으면 deleteNode()를 호출해 삭제
+
+```java
+
+    @Override
+    public void delete(Comparable x) {
+        deleteItem(root, x);
+    }
+
+    private AVLNode deleteItem(AVLNode tNode, Comparable x) {
+        if (tNode == NIL) {
+            return NIL;
+        } else {
+            if (x.compareTo(tNode.item) == 0) {
+                tNode = deleteNode(tNode);
+            } else if (x.compareTo(tNode.item) < 0) {
+                tNode.left = deleteItem(tNode.left, x);
+                tNode.height = 1 + Math.max(tNode.right.height, tNode.left.height);
+                int type = needBalance(tNode);
+                if (type != NO_NEED) {
+                    tNode = balanceAVL(tNode, type);
+                }
+            } else {
+                tNode.right = deleteItem(tNode.right, x);
+                tNode.height = 1 + Math.max(tNode.right.height, tNode.left.height);
+                int type = needBalance(tNode);
+                if (type != NO_NEED) {
+                    tNode = balanceAVL(tNode, type);
+                }
+            }
+        }
+        return tNode;
+    }
+```
+
+### deleteNode
+
+- 노드를 실제로 삭제하는 메소드  
+
+삭제할 노드의 종류  
+1. 자식이 없는 노드
+2. 오른쪽 자식만 가진 노드
+3. 왼쪽 자식만 가진 노드
+4. 오른쪽, 왼쪽 자식을 모두 가진 노드 : 이 경우, 오른쪽 자식트리에서 가장 작은 값으로 덮어씌운다
+
+``` java
+
+    private AVLNode deleteNode(AVLNode tNode) {
+        if ((tNode.left == NIL) && (tNode.right == NIL)) {
+            return NIL;
+        } else if (tNode.left == NIL) {
+            return tNode.right;
+        } else if (tNode.right == NIL) {
+            return tNode.left;
+        } else {
+            returnPair rPair = deleteMinItem(tNode.right);
+            tNode.item = rPair.item;
+            tNode.right = rPair.node;
+            int type = needBalance(tNode);
+            if (type != NO_NEED) {
+                tNode = balanceAVL(tNode, type);
+            }
+            return tNode;
+        }
+    }
+
+    private returnPair deleteMinItem(AVLNode tNode) {
+        int type;
+        if (tNode.left == NIL) {
+            return new returnPair(tNode.item, tNode.right);
+        } else {
+            returnPair rPair = deleteMinItem(tNode.left);
+            tNode.left = rPair.node;
+            tNode.height = 1 + Math.max(tNode.right.height, tNode.left.height);
+            type = needBalance(tNode);
+            if (type != NO_NEED) {
+                tNode = balanceAVL(tNode, type);
+            }
+            rPair.node = tNode;
+            return rPair;
+        }
+    }
+
+    private class returnPair {
+        private Comparable item;
+        private AVLNode node;
+
+        private returnPair(Comparable it, AVLNode nd) {
+            item = it;
+            node = nd;
+        }
+    }
+
+```
